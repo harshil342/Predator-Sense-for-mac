@@ -1,20 +1,36 @@
 #!/bin/bash
-# PredatorSense for macOS App Launcher
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
-cd "$DIR"
+# PredatorSense for macOS — Standalone App Launcher
+APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../Resources/app" && pwd )"
+cd "$APP_DIR"
 
-echo "[+] Starting PredatorSense Hardware Daemon..."
-node src/server/daemon.js &
+echo "=================================================="
+echo "  Starting PredatorSense for macOS (PHN16-71)..."
+echo "=================================================="
+
+# Check node availability
+if command -v node >/dev/null 2>&1; then
+    NODE_CMD="node"
+elif [ -f "/usr/local/bin/node" ]; then
+    NODE_CMD="/usr/local/bin/node"
+elif [ -f "/opt/homebrew/bin/node" ]; then
+    NODE_CMD="/opt/homebrew/bin/node"
+else
+    NODE_CMD="node"
+fi
+
+$NODE_CMD src/server/daemon.js &
 DAEMON_PID=$!
 
 sleep 1
 
-# If swift menubar binary exists, launch it in background
-if [ -f "$DIR/tools/PredatorMenubar" ]; then
-    "$DIR/tools/PredatorMenubar" &
+# Launch Swift Menubar Companion if compiled
+if [ -f "$APP_DIR/tools/PredatorMenubar" ]; then
+    "$APP_DIR/tools/PredatorMenubar" &
+elif [ -f "$APP_DIR/tools/PredatorMenubar.swift" ]; then
+    swift "$APP_DIR/tools/PredatorMenubar.swift" &
 fi
 
-# Open full PredatorSense UI in default browser or WebKit app
+# Open full PredatorSense UI
 open "http://127.0.0.1:48800"
 
 wait $DAEMON_PID

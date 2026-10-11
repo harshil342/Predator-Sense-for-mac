@@ -145,6 +145,20 @@ async function runVerification() {
     assert(fs.existsSync('PredatorSense.app/Contents/MacOS/PredatorSense'), 'App launcher missing');
   });
 
+  test('macOS Disk Image (.dmg) installer exists and is verified', () => {
+    const dmgPath = 'PredatorSense-5.0.1-macOS.dmg';
+    assert(fs.existsSync(dmgPath), 'DMG missing');
+    const stat = fs.statSync(dmgPath);
+    assert(stat.size > 50000, `DMG size unexpected: ${stat.size} bytes`);
+  });
+
+  test('macOS Portable ZIP archive exists', () => {
+    const zipPath = 'PredatorSense-5.0.1-macOS.zip';
+    assert(fs.existsSync(zipPath), 'ZIP missing');
+    const stat = fs.statSync(zipPath);
+    assert(stat.size > 10000, `ZIP size unexpected: ${stat.size} bytes`);
+  });
+
   console.log('\n========================================================');
   console.log(`  VERIFICATION RESULTS: ${passed} / ${total} TESTS PASSED (100%)`);
   console.log('========================================================\n');
