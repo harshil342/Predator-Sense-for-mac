@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Enforce LF for shell and execution scripts
+*.sh text eol=lf
+*.command text eol=lf
+*.swift text eol=lf
+PredatorSense text eol=lf
+
+# Explicit binaries
+*.aml binary
+*.dmg binary
+*.iso binary
+*.zip binary

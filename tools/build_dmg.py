@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-PredatorSense for macOS — Disk Image (.dmg) Builder
-Generates a native mountable Apple Disk Image (.dmg) containing PredatorSense.app,
-a symlink to /Applications, and setup instructions.
-Compatible with macOS 11+ through macOS 15 Sequoia.
+PredatorSense for macOS — Disk Image Builder
+Generates a mountable disk image containing PredatorSense.app,
+the one-click Install.command automated installer, SSDT-PREDATOR.aml,
+and a drop-target symlink to /Applications.
+Produces both PredatorSense-5.0.1-macOS.dmg and PredatorSense-5.0.1-macOS.iso.
+Compatible with macOS 11 Big Sur through macOS 15 Sequoia.
 """
 
-import os, sys, pycdlib
+import os, sys, shutil, pycdlib
 
-def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="PredatorSense-5.0.1-macOS.dmg"):
+def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="PredatorSense-5.0.2-macOS.dmg", output_iso="PredatorSense-5.0.2-macOS.iso"):
     print("==========================================================")
-    print("  BUILDING PREDATORSENSE FOR MACOS DISK IMAGE (.DMG)")
+    print("  BUILDING PREDATORSENSE FOR MACOS DISK IMAGE")
     print(f"  Source: {app_source_dir}")
-    print(f"  Target: {output_dmg}")
+    print(f"  Target DMG: {output_dmg}")
+    print(f"  Target ISO: {output_iso}")
     print("==========================================================\n")
 
     if not os.path.exists(app_source_dir):
@@ -33,24 +36,25 @@ def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="Pred
             "==========================================================\n"
             "  Acer PredatorSense for macOS — Helios Neo 16 (PHN16-71)\n"
             "==========================================================\n\n"
-            "INSTALLATION INSTRUCTIONS:\n"
+            "QUICK INSTALLATION:\n"
+            "1. Double-click 'Install.command' to install automatically!\n"
+            "   - It copies PredatorSense.app to /Applications\n"
+            "   - Removes Gatekeeper quarantine flags\n"
+            "   - Ad-hoc signs the application bundle\n"
+            "   - Configures executable permissions\n"
+            "   - Optionally installs SSDT-PREDATOR.aml to OpenCore EFI\n\n"
+            "MANUAL INSTALLATION:\n"
             "1. Drag 'PredatorSense.app' to your 'Applications' folder.\n"
-            "2. Ensure your OpenCore EFI contains SSDT-PREDATOR.aml in\n"
-            "   EFI/OC/ACPI/ and is enabled in config.plist.\n"
-            "3. Double-click PredatorSense in Applications to start.\n"
-            "4. The Hardware Daemon starts on 127.0.0.1:48800 and opens\n"
-            "   the full gaming cockpit in your default browser/WebKit.\n"
-            "5. The Menubar companion provides real-time RPM/Temp status.\n\n"
+            "2. If macOS reports 'App is damaged' or 'unidentified developer', run:\n"
+            "   xattr -cr /Applications/PredatorSense.app\n"
+            "   codesign --force --deep -s - /Applications/PredatorSense.app\n"
+            "3. Double-click PredatorSense in Applications to start.\n\n"
             "Hardware & Models Supported:\n"
             "- Acer Predator Helios Neo (PHN16-71/72, PHN18-71)\n"
             "- Acer Predator Helios 16 / 18 (PH16-71/72, PH18-71/72)\n"
             "- Acer Predator Helios 300 (PH315-53/54/55, PH317-53/54/55)\n"
             "- Acer Predator Triton (PT314/315/515/516, PT14/16/17)\n"
             "- Acer Nitro 5 / 16 / 17 (AN515-55/57/58, AN16-51, AN17-51)\n"
-            "- Intel Core i7 / i9 (PL1 / PL2 TDP Power Control)\n"
-            "- Dual AeroBlade 3D Fans (Quiet, Balanced, Perf, Turbo, Custom)\n"
-            "- Sunrex 4-Zone RGB Keyboard (VID 0x05AF / Usage 0xFF02)\n"
-            "- Insyde ERAM ACPI Telemetry & 80% Battery Care Protection\n"
         )
 
     iso = pycdlib.PyCdlib()
@@ -107,7 +111,7 @@ def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="Pred
             joliet_file_path = joliet_dir_path + '/' + f
             
             # Check if executable
-            is_exec = (f == "PredatorSense" or f.endswith(".sh") or f.endswith(".swift"))
+            is_exec = (f == "PredatorSense" or f.endswith(".sh") or f.endswith(".command") or f.endswith(".swift"))
             mode = 0o755 if is_exec else 0o644
 
             iso.add_file(
@@ -118,7 +122,31 @@ def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="Pred
                 file_mode=mode
             )
 
-    # 2. Add /Applications symlink at root of DMG
+    # 2. Add Install.command at root of disk image
+    if os.path.exists("Install.command"):
+        file_seq += 1
+        iso.add_file(
+            filename="Install.command",
+            iso_path="/INSTALL.CMD;1",
+            rr_name="Install.command",
+            joliet_path="/Install.command",
+            file_mode=0o755
+        )
+        print("[+] Added Install.command automated installer")
+
+    # 3. Add SSDT-PREDATOR.aml at root of disk image
+    if os.path.exists("SSDT-PREDATOR.aml"):
+        file_seq += 1
+        iso.add_file(
+            filename="SSDT-PREDATOR.aml",
+            iso_path="/SSDT_PRE.AML;1",
+            rr_name="SSDT-PREDATOR.aml",
+            joliet_path="/SSDT-PREDATOR.aml",
+            file_mode=0o644
+        )
+        print("[+] Added SSDT-PREDATOR.aml ACPI bridge")
+
+    # 4. Add /Applications symlink at root of disk image
     try:
         iso.add_symlink(
             symlink_path='/Applications',
@@ -130,7 +158,7 @@ def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="Pred
     except Exception as e:
         print(f"[!] Warning: Symlink skipped ({e})")
 
-    # 3. Add README.txt at root of DMG
+    # 5. Add README.txt at root of disk image
     file_seq += 1
     iso.add_file(
         filename=readme_path,
@@ -141,20 +169,25 @@ def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="Pred
     )
     print("[+] Added README.txt installation notes")
 
-    # 4. Write image file
+    # 6. Write image files
     if os.path.exists(output_dmg):
         os.remove(output_dmg)
+    if os.path.exists(output_iso):
+        os.remove(output_iso)
     
-    print(f"[+] Writing {output_dmg} with Rock Ridge & Joliet extensions...")
-    iso.write(output_dmg)
+    print(f"[+] Writing {output_iso} and {output_dmg} with Rock Ridge & Joliet extensions...")
+    iso.write(output_iso)
     iso.close()
+
+    # Create matching .dmg copy for compatibility
+    shutil.copyfile(output_iso, output_dmg)
 
     # Clean scratch file
     if os.path.exists(readme_path):
         os.remove(readme_path)
 
     size_mb = os.path.getsize(output_dmg) / (1024 * 1024)
-    print(f"\n[SUCCESS] Generated macOS Disk Image: {output_dmg} ({size_mb:.2f} MB)")
+    print(f"\n[SUCCESS] Generated macOS Disk Images:\n  - {output_dmg} ({size_mb:.2f} MB)\n  - {output_iso} ({size_mb:.2f} MB)")
     return output_dmg
 
 if __name__ == '__main__':

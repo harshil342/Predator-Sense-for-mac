@@ -1,36 +1,113 @@
 #!/bin/bash
-# PredatorSense for macOS — Standalone App Launcher
-APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../Resources/app" && pwd )"
-cd "$APP_DIR"
+# ==============================================================================
+# PredatorSense for macOS — Standalone Application Launcher
+# Target: Acer Predator Helios / Helios Neo / Triton / Nitro Series
+# ==============================================================================
 
-echo "=================================================="
-echo "  Starting PredatorSense for macOS (PHN16-71)..."
-echo "=================================================="
+# Resolve absolute directory of bundle resources
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+APP_DIR="$( cd "$SCRIPT_DIR/../Resources/app" && pwd )"
+cd "$APP_DIR" || exit 1
 
-# Check node availability
+# Setup dedicated logging directory in ~/Library/Logs
+LOG_DIR="$HOME/Library/Logs/PredatorSense"
+mkdir -p "$LOG_DIR"
+DAEMON_LOG="$LOG_DIR/daemon.log"
+MENUBAR_LOG="$LOG_DIR/menubar.log"
+
+echo "==================================================" >> "$DAEMON_LOG"
+echo "  Starting PredatorSense for macOS [$(date)]" >> "$DAEMON_LOG"
+echo "  App Dir: $APP_DIR" >> "$DAEMON_LOG"
+echo "==================================================" >> "$DAEMON_LOG"
+
+# Augment PATH for macOS GUI (LaunchServices) environments
+# Finder launches apps with minimal PATH (/usr/bin:/bin:/usr/sbin:/sbin)
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/opt/local/bin:$HOME/.nvm/current/bin:$HOME/.volta/bin:$HOME/.asdf/shims:$HOME/.fnm/current/bin:$PATH"
+
+# If nvm is present, attempt to resolve latest installed node version
+if [ -d "$HOME/.nvm/versions/node" ]; then
+    LATEST_NVM_NODE="$(find "$HOME/.nvm/versions/node" -maxdepth 2 -name node -type f 2>/dev/null | sort -V | tail -n 1)"
+    if [ -n "$LATEST_NVM_NODE" ] && [ -x "$LATEST_NVM_NODE" ]; then
+        export PATH="$(dirname "$LATEST_NVM_NODE"):$PATH"
+    fi
+fi
+
+# Locate Node.js binary
+NODE_CMD=""
 if command -v node >/dev/null 2>&1; then
-    NODE_CMD="node"
-elif [ -f "/usr/local/bin/node" ]; then
-    NODE_CMD="/usr/local/bin/node"
-elif [ -f "/opt/homebrew/bin/node" ]; then
+    NODE_CMD="$(command -v node)"
+elif [ -x "/opt/homebrew/bin/node" ]; then
     NODE_CMD="/opt/homebrew/bin/node"
+elif [ -x "/usr/local/bin/node" ]; then
+    NODE_CMD="/usr/local/bin/node"
+elif [ -x "/opt/local/bin/node" ]; then
+    NODE_CMD="/opt/local/bin/node"
+elif [ -x "/usr/bin/node" ]; then
+    NODE_CMD="/usr/bin/node"
+fi
+
+# If Node is missing, prompt native macOS dialog instead of silent failure
+if [ -z "$NODE_CMD" ]; then
+    echo "[ERROR] Node.js runtime not found." >> "$DAEMON_LOG"
+    if command -v osascript >/dev/null 2>&1; then
+        ACTION=$(osascript -e '
+            try
+                set dialogResult to display alert "Node.js Runtime Required" ¬
+                    message "PredatorSense requires Node.js (v18+) to communicate with Acer EC fans and hardware.\n\nWould you like to download Node.js now?" ¬
+                    as critical ¬
+                    buttons {"Download Node.js", "Cancel"} ¬
+                    default button "Download Node.js"
+                return button returned of dialogResult
+            on error
+                return "Cancel"
+            end try
+        ')
+        if [ "$ACTION" = "Download Node.js" ]; then
+            open "https://nodejs.org/en/download"
+        fi
+    fi
+    exit 1
+fi
+
+echo "[INFO] Using Node binary: $NODE_CMD ($($NODE_CMD -v 2>&1))" >> "$DAEMON_LOG"
+
+# Check if daemon is already running on port 48800
+DAEMON_RUNNING=0
+if command -v curl >/dev/null 2>&1; then
+    if curl -s -f "http://127.0.0.1:48800/api/state" >/dev/null 2>&1; then
+        DAEMON_RUNNING=1
+    fi
+fi
+
+if [ $DAEMON_RUNNING -eq 0 ]; then
+    echo "[INFO] Launching Predator Hardware Daemon..." >> "$DAEMON_LOG"
+    "$NODE_CMD" src/server/daemon.js >> "$DAEMON_LOG" 2>&1 &
+    DAEMON_PID=$!
+    
+    # Wait for daemon port ready (up to 3 seconds)
+    for i in 1 2 3; do
+        sleep 0.5
+        if curl -s "http://127.0.0.1:48800/api/state" >/dev/null 2>&1; then
+            break
+        fi
+    done
 else
-    NODE_CMD="node"
+    echo "[INFO] Daemon already running on port 48800." >> "$DAEMON_LOG"
 fi
 
-$NODE_CMD src/server/daemon.js &
-DAEMON_PID=$!
-
-sleep 1
-
-# Launch Swift Menubar Companion if compiled
-if [ -f "$APP_DIR/tools/PredatorMenubar" ]; then
-    "$APP_DIR/tools/PredatorMenubar" &
-elif [ -f "$APP_DIR/tools/PredatorMenubar.swift" ]; then
-    swift "$APP_DIR/tools/PredatorMenubar.swift" &
+# Launch Swift Menubar Companion if present
+if [ -f "$APP_DIR/tools/PredatorMenubar" ] && [ -x "$APP_DIR/tools/PredatorMenubar" ]; then
+    "$APP_DIR/tools/PredatorMenubar" >> "$MENUBAR_LOG" 2>&1 &
+elif [ -f "$APP_DIR/tools/PredatorMenubar.swift" ] && command -v swift >/dev/null 2>&1; then
+    swift "$APP_DIR/tools/PredatorMenubar.swift" >> "$MENUBAR_LOG" 2>&1 &
 fi
 
-# Open full PredatorSense UI
+# Open full PredatorSense UI in default browser
 open "http://127.0.0.1:48800"
 
-wait $DAEMON_PID
+# Cleanup on exit
+trap 'kill $DAEMON_PID 2>/dev/null' EXIT INT TERM
+
+if [ -n "$DAEMON_PID" ]; then
+    wait $DAEMON_PID
+fi

@@ -146,17 +146,30 @@ async function runVerification() {
   });
 
   test('macOS Disk Image (.dmg) installer exists and is verified', () => {
-    const dmgPath = 'PredatorSense-5.0.1-macOS.dmg';
+    const dmgPath = 'PredatorSense-5.0.2-macOS.dmg';
     assert(fs.existsSync(dmgPath), 'DMG missing');
     const stat = fs.statSync(dmgPath);
     assert(stat.size > 50000, `DMG size unexpected: ${stat.size} bytes`);
   });
 
   test('macOS Portable ZIP archive exists', () => {
-    const zipPath = 'PredatorSense-5.0.1-macOS.zip';
+    const zipPath = 'PredatorSense-5.0.2-macOS.zip';
     assert(fs.existsSync(zipPath), 'ZIP missing');
     const stat = fs.statSync(zipPath);
     assert(stat.size > 10000, `ZIP size unexpected: ${stat.size} bytes`);
+  });
+
+  test('macOS Mountable ISO disc image exists and is verified', () => {
+    const isoPath = 'PredatorSense-5.0.2-macOS.iso';
+    assert(fs.existsSync(isoPath), 'ISO missing');
+    const stat = fs.statSync(isoPath);
+    assert(stat.size > 50000, `ISO size unexpected: ${stat.size} bytes`);
+  });
+
+  test('macOS automated Install.command and native DMG builder exist', () => {
+    assert(fs.existsSync('Install.command'), 'Install.command missing');
+    assert(fs.existsSync('install.sh'), 'install.sh missing');
+    assert(fs.existsSync('tools/create_native_dmg.command'), 'create_native_dmg.command missing');
   });
 
   console.log('\n========================================================');

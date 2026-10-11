@@ -33,3 +33,25 @@ check_config_plist.py
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Reference dumps and logs
+mac os reference files/opencore-*.txt
+mac os reference files/NullMoth/
+mac os reference files/EFI/BOOT/
+mac os reference files/EFI/OC/Drivers/
+mac os reference files/EFI/OC/Kexts/
+mac os reference files/EFI/OC/Tools/
+mac os reference files/EFI/OC/Resources/
+mac os reference files/EFI/OC/OpenCore.efi
+mac os reference files/EFI/OC/.content*
+mac os reference files/EFI/OC/config.plist.nullmoth*
+mac os reference files/EFI/OC/ACPI/DSDT.*
+mac os reference files/EFI/OC/ACPI/SSDT-EC.*
+mac os reference files/EFI/OC/ACPI/SSDT-GPI0.aml
+mac os reference files/EFI/OC/ACPI/SSDT-MCHC.aml
+mac os reference files/EFI/OC/ACPI/SSDT-PLUG-ALT.aml
+mac os reference files/EFI/OC/ACPI/SSDT-RTCAWAC.aml
+mac os reference files/EFI/OC/ACPI/SSDT-SBUS.aml
+mac os reference files/EFI/OC/ACPI/SSDT-USB-Reset.aml
+mac os reference files/EFI/OC/ACPI/SSDT-USBX.aml
+mac os reference files/EFI/OC/ACPI/SSDT-XOSI.aml
