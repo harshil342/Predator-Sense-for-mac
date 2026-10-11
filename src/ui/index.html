@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PredatorSense for macOS — Helios Neo 16</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="predator-theme">
+  <div class="window-frame">
+    <!-- Window Titlebar & Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="traffic-lights">
+          <span class="light close"></span>
+          <span class="light min"></span>
+          <span class="light max"></span>
+        </div>
+        <div class="brand-lockup">
+          <svg class="predator-emblem" viewBox="0 0 100 100" fill="none">
+            <!-- Authentic Predator Geometric Emblem -->
+            <path d="M50 4L20 40L28 46L50 20L72 46L80 40L50 4Z" fill="currentColor"/>
+            <path d="M50 28L32 54L38 60L50 44L62 60L68 54L50 28Z" fill="currentColor"/>
+            <path d="M50 52L24 88L32 94L50 70L68 94L76 88L50 52Z" fill="currentColor"/>
+            <path d="M50 78L40 92L46 96L50 90L54 96L60 92L50 78Z" fill="currentColor"/>
+          </svg>
+          <div class="brand-text">
+            <span class="brand-title">PREDATOR<span class="title-accent">SENSE</span></span>
+            <span class="brand-sub">HELIOS NEO 16 • macOS SEQUOIA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Performance Mode Quick Selector -->
+        <div class="mode-pill-bar" id="modePillBar">
+          <button class="mode-pill" data-mode="quiet">
+            <span class="pill-dot"></span>
+            <span class="pill-name">QUIET</span>
+          </button>
+          <button class="mode-pill active" data-mode="balanced">
+            <span class="pill-dot"></span>
+            <span class="pill-name">BALANCED</span>
+          </button>
+          <button class="mode-pill" data-mode="performance">
+            <span class="pill-dot"></span>
+            <span class="pill-name">PERF</span>
+          </button>
+          <button class="mode-pill turbo" data-mode="turbo">
+            <span class="pill-dot"></span>
+            <span class="pill-name">TURBO</span>
+          </button>
+          <button class="mode-pill eco" data-mode="eco">
+            <span class="pill-dot"></span>
+            <span class="pill-name">ECO</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="hw-badge ac-badge" id="acBadge">
+          <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 2v10h3v9l7-12h-4l3-7H7z"/>
+          </svg>
+          <span class="badge-text" id="acStatusText">AC 330W</span>
+        </div>
+
+        <div class="hw-badge batt-badge" id="battBadge">
+          <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 4h-2V2h-4v2H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H8V6h8v14z"/>
+          </svg>
+          <span class="badge-text" id="battPercentText">82%</span>
+        </div>
+
+        <!-- Battery Care 80% Switch -->
+        <label class="toggle-pill" title="Limit battery charge to 80% to maximize lifespan">
+          <input type="checkbox" id="batteryCapToggle" checked>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">CARE 80%</span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Navigation Bar -->
+    <nav class="app-nav">
+      <button class="nav-tab active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        DASHBOARD
+      </button>
+      <button class="nav-tab" data-tab="fans">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 12c-2-4-2-7 0-9 2 4 2 7 0 9zm0 0c4-2 7-2 9 0-4 2-7 2-9 0zm0 0c2 4 2 7 0 9-2-4-2-7 0-9zm0 0c-4 2-7 2-9 0 4-2 7-2 9 0z"/></svg>
+        COOLBOOST FANS
+      </button>
+      <button class="nav-tab" data-tab="lighting">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
+        4-ZONE RGB
+      </button>
+      <button class="nav-tab" data-tab="telemetry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        HARDWARE MONITOR
+      </button>
+    </nav>
+
+    <!-- Content Workspace -->
+    <main class="app-content">
+      
+      <!-- ================= SECTION 1: DASHBOARD ================= -->
+      <section class="tab-pane active" id="pane-dashboard">
+        <!-- Hero Mode Stage -->
+        <div class="dashboard-hero">
+          <div class="hero-status">
+            <span class="status-overline">ACTIVE PERFORMANCE PROFILE</span>
+            <h1 class="hero-mode-title" id="heroModeTitle">BALANCED</h1>
+            <p class="hero-mode-desc" id="heroModeDesc">Dynamic fan curve and balanced TDP limits for optimal everyday responsiveness and battery efficiency.</p>
+            
+            <div class="power-readouts">
+              <div class="power-stat">
+                <span class="stat-label">SUSTAINED PL1</span>
+                <span class="stat-value" id="statPL1">55W</span>
+              </div>
+              <div class="power-stat">
+                <span class="stat-label">TURBO BOOST PL2</span>
+                <span class="stat-value" id="statPL2">75W</span>
+              </div>
+              <div class="power-stat">
+                <span class="stat-label">ACPI BRIDGE</span>
+                <span class="stat-value status-online">SSDT-PREDATOR</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <div class="preset-cards-grid">
+              <div class="preset-card" data-mode="quiet">
+                <div class="preset-header">
+                  <span class="preset-tag">QUIET</span>
+                  <span class="preset-rpm">~2000 RPM</span>
+                </div>
+                <p class="preset-note">Acoustic priority with silenced AeroBlade fans.</p>
+              </div>
+
+              <div class="preset-card active" data-mode="balanced">
+                <div class="preset-header">
+                  <span class="preset-tag">BALANCED</span>
+                  <span class="preset-rpm">AUTO RPM</span>
+                </div>
+                <p class="preset-note">Adaptive intelligent cooling based on CPU/GPU thermals.</p>
+              </div>
+
+              <div class="preset-card" data-mode="performance">
+                <div class="preset-header">
+                  <span class="preset-tag">PERFORMANCE</span>
+                  <span class="preset-rpm">AGGRESSIVE</span>
+                </div>
+                <p class="preset-note">Increased power limits and elevated fan velocity.</p>
+              </div>
+
+              <div class="preset-card turbo" data-mode="turbo">
+                <div class="preset-header">
+                  <span class="preset-tag">TURBO</span>
+                  <span class="preset-rpm">MAX 5600 RPM</span>
+                </div>
+                <p class="preset-note">Maximum unlocked TDP, full fan speed, extreme GPU boost.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Glance Telemetry Row -->
+        <div class="glance-grid">
+          <!-- CPU Glance -->
+          <div class="glance-panel">
+            <div class="panel-header">
+              <span class="panel-title">CPU THERMAL & FREQ</span>
+              <span class="panel-badge" id="cpuTempBadge">48°C</span>
+            </div>
+            <div class="metric-big-row">
+              <div class="metric-num"><span id="cpuTempNum">48</span><span class="metric-unit">°C</span></div>
+              <div class="metric-aux">
+                <div>LOAD: <strong id="cpuLoadText">14.5%</strong></div>
+                <div>TJMAX: <strong>100°C</strong></div>
+              </div>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="cpuTempBar" style="width: 48%;"></div>
+            </div>
+          </div>
+
+          <!-- GPU Glance -->
+          <div class="glance-panel">
+            <div class="panel-header">
+              <span class="panel-title">RTX 4050 THERMAL</span>
+              <span class="panel-badge" id="gpuTempBadge">44°C</span>
+            </div>
+            <div class="metric-big-row">
+              <div class="metric-num"><span id="gpuTempNum">44</span><span class="metric-unit">°C</span></div>
+              <div class="metric-aux">
+                <div>MEMORY: <strong>6 GB GDDR6</strong></div>
+                <div>DRIVER: <strong>NullMoth Metal</strong></div>
+              </div>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill cyan" id="gpuTempBar" style="width: 44%;"></div>
+            </div>
+          </div>
+
+          <!-- Dual Fan Velocity Glance -->
+          <div class="glance-panel">
+            <div class="panel-header">
+              <span class="panel-title">AEROBLADE 3D FANS</span>
+              <span class="panel-badge" id="fanModeBadge">AUTO</span>
+            </div>
+            <div class="fan-dual-readout">
+              <div class="fan-sub-col">
+                <span class="fan-lbl">CPU FAN</span>
+                <span class="fan-rpm-val" id="glanceCpuRpm">2,150</span>
+                <span class="fan-rpm-unit">RPM</span>
+              </div>
+              <div class="fan-divider"></div>
+              <div class="fan-sub-col">
+                <span class="fan-lbl">GPU FAN</span>
+                <span class="fan-rpm-val" id="glanceGpuRpm">2,280</span>
+                <span class="fan-rpm-unit">RPM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: DUAL FANS ================= -->
+      <section class="tab-pane" id="pane-fans">
+        <div class="fans-view-header">
+          <div>
+            <h2 class="view-title">COOLBOOST™ AEROBLADE CONTROLLER</h2>
+            <p class="view-sub">Custom engineered 5th Gen AeroBlade™ 3D metal fan control with bionic wingtips.</p>
+          </div>
+          <div class="fan-mode-switch-group">
+            <button class="fan-mode-btn active" data-fanmode="auto">AUTO</button>
+            <button class="fan-mode-btn" data-fanmode="max">MAX (TURBO)</button>
+            <button class="fan-mode-btn" data-fanmode="custom">CUSTOM</button>
+          </div>
+        </div>
+
+        <div class="fan-dials-container">
+          <!-- CPU FAN DIAL -->
+          <div class="fan-card">
+            <div class="fan-card-header">
+              <span class="fan-card-title">CPU AEROBLADE FAN</span>
+              <span class="fan-hw-id">EC: 0x1C • 16-BIT</span>
+            </div>
+
+            <div class="dial-wrapper">
+              <svg class="radial-gauge" viewBox="0 0 200 200">
+                <circle class="gauge-bg" cx="100" cy="100" r="82"/>
+                <circle class="gauge-arc" id="cpuGaugeArc" cx="100" cy="100" r="82" stroke-dasharray="515" stroke-dashoffset="300"/>
+              </svg>
+              <!-- Animated Rotating Fan Blade in Center -->
+              <div class="blade-animation" id="cpuBlade">
+                <svg viewBox="0 0 100 100" fill="currentColor">
+                  <path d="M50 50 L50 15 A12 12 0 0 1 65 25 Z" opacity="0.9"/>
+                  <path d="M50 50 L85 50 A12 12 0 0 1 75 65 Z" opacity="0.9"/>
+                  <path d="M50 50 L50 85 A12 12 0 0 1 35 75 Z" opacity="0.9"/>
+                  <path d="M50 50 L15 50 A12 12 0 0 1 25 35 Z" opacity="0.9"/>
+                  <circle cx="50" cy="50" r="10" fill="#0c1017"/>
+                  <circle cx="50" cy="50" r="4" fill="currentColor"/>
+                </svg>
+              </div>
+              <div class="dial-center-info">
+                <span class="dial-val" id="dialCpuRpm">2150</span>
+                <span class="dial-unit">RPM</span>
+              </div>
+            </div>
+
+            <div class="fan-slider-box" id="cpuSliderBox">
+              <div class="slider-header">
+                <span>TARGET VELOCITY</span>
+                <span id="cpuTargetPercent">50%</span>
+              </div>
+              <input type="range" class="tech-slider" id="cpuFanSlider" min="0" max="100" value="50">
+            </div>
+          </div>
+
+          <!-- GPU FAN DIAL -->
+          <div class="fan-card">
+            <div class="fan-card-header">
+              <span class="fan-card-title">GPU AEROBLADE FAN</span>
+              <span class="fan-hw-id">EC: 0x06 • 16-BIT</span>
+            </div>
+
+            <div class="dial-wrapper">
+              <svg class="radial-gauge" viewBox="0 0 200 200">
+                <circle class="gauge-bg" cx="100" cy="100" r="82"/>
+                <circle class="gauge-arc" id="gpuGaugeArc" cx="100" cy="100" r="82" stroke-dasharray="515" stroke-dashoffset="300"/>
+              </svg>
+              <div class="blade-animation" id="gpuBlade">
+                <svg viewBox="0 0 100 100" fill="currentColor">
+                  <path d="M50 50 L50 15 A12 12 0 0 1 65 25 Z" opacity="0.9"/>
+                  <path d="M50 50 L85 50 A12 12 0 0 1 75 65 Z" opacity="0.9"/>
+                  <path d="M50 50 L50 85 A12 12 0 0 1 35 75 Z" opacity="0.9"/>
+                  <path d="M50 50 L15 50 A12 12 0 0 1 25 35 Z" opacity="0.9"/>
+                  <circle cx="50" cy="50" r="10" fill="#0c1017"/>
+                  <circle cx="50" cy="50" r="4" fill="currentColor"/>
+                </svg>
+              </div>
+              <div class="dial-center-info">
+                <span class="dial-val" id="dialGpuRpm">2280</span>
+                <span class="dial-unit">RPM</span>
+              </div>
+            </div>
+
+            <div class="fan-slider-box" id="gpuSliderBox">
+              <div class="slider-header">
+                <span>TARGET VELOCITY</span>
+                <span id="gpuTargetPercent">50%</span>
+              </div>
+              <input type="range" class="tech-slider" id="gpuFanSlider" min="0" max="100" value="50">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: 4-ZONE RGB ================= -->
+      <section class="tab-pane" id="pane-lighting">
+        <div class="lighting-layout">
+          <!-- Left: Keyboard Silhouette & Zone Visualizer -->
+          <div class="keyboard-stage">
+            <div class="stage-header">
+              <h2 class="view-title">SUNREX 4-ZONE RGB MATRIX</h2>
+              <span class="stage-spec">USB HID VID 0x05AF • USAGE 0xFF02</span>
+            </div>
+
+            <!-- Authentic 4-Zone Predator Laptop Keyboard Schematic -->
+            <div class="keyboard-chassis">
+              <div class="kb-zone" id="kbZone0" data-zone="0">
+                <div class="zone-glow"></div>
+                <div class="zone-content">
+                  <span class="zone-name">ZONE 1</span>
+                  <span class="zone-keys">QWE / WASD / TAB / SHIFT</span>
+                </div>
+              </div>
+
+              <div class="kb-zone" id="kbZone1" data-zone="1">
+                <div class="zone-glow"></div>
+                <div class="zone-content">
+                  <span class="zone-name">ZONE 2</span>
+                  <span class="zone-keys">RTYU / FGHJ / VBNM</span>
+                </div>
+              </div>
+
+              <div class="kb-zone" id="kbZone2" data-zone="2">
+                <div class="zone-glow"></div>
+                <div class="zone-content">
+                  <span class="zone-name">ZONE 3</span>
+                  <span class="zone-keys">IOP[] / KL;' / ENTER</span>
+                </div>
+              </div>
+
+              <div class="kb-zone" id="kbZone3" data-zone="3">
+                <div class="zone-glow"></div>
+                <div class="zone-content">
+                  <span class="zone-name">ZONE 4</span>
+                  <span class="zone-keys">NUMPAD / ARROWS</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-selector-row">
+              <button class="zone-tab-btn active" data-selzone="all">ALL ZONES</button>
+              <button class="zone-tab-btn" data-selzone="0">ZONE 1</button>
+              <button class="zone-tab-btn" data-selzone="1">ZONE 2</button>
+              <button class="zone-tab-btn" data-selzone="2">ZONE 3</button>
+              <button class="zone-tab-btn" data-selzone="3">ZONE 4</button>
+            </div>
+          </div>
+
+          <!-- Right: Lighting Controls & Palette -->
+          <div class="lighting-controls-panel">
+            <h3 class="panel-section-title">LIGHTING EFFECT</h3>
+            <div class="effect-pills-grid" id="effectPills">
+              <button class="fx-pill active" data-effect="static">STATIC</button>
+              <button class="fx-pill" data-effect="breathing">BREATHING</button>
+              <button class="fx-pill" data-effect="wave">WAVE</button>
+              <button class="fx-pill" data-effect="zoom">ZOOM</button>
+              <button class="fx-pill" data-effect="neon">NEON</button>
+              <button class="fx-pill" data-effect="rain">RAIN</button>
+              <button class="fx-pill" data-effect="spectrum">SPECTRUM</button>
+            </div>
+
+            <h3 class="panel-section-title">PRESET PALETTES</h3>
+            <div class="color-presets-row" id="colorPresets">
+              <button class="color-dot active" style="--c: #00E6FF;" title="Predator Cyan" data-color="#00E6FF"></button>
+              <button class="color-dot" style="--c: #00FF7F;" title="Acid Green" data-color="#00FF7F"></button>
+              <button class="color-dot" style="--c: #FF0055;" title="Cyber Crimson" data-color="#FF0055"></button>
+              <button class="color-dot" style="--c: #FF9900;" title="Turbo Gold" data-color="#FF9900"></button>
+              <button class="color-dot" style="--c: #A000FF;" title="Plasma Violet" data-color="#A000FF"></button>
+              <button class="color-dot" style="--c: #FFFFFF;" title="Clean White" data-color="#FFFFFF"></button>
+            </div>
+
+            <div class="custom-color-row">
+              <label for="customColorPicker">CUSTOM COLOR:</label>
+              <input type="color" id="customColorPicker" value="#00E6FF">
+              <input type="text" class="tech-hex-input" id="hexInput" value="#00E6FF" maxlength="7">
+            </div>
+
+            <h3 class="panel-section-title">GLOBAL BRIGHTNESS & SPEED</h3>
+            <div class="lighting-slider-group">
+              <div class="slider-header">
+                <span>BRIGHTNESS</span>
+                <span id="kbBrightnessText">80%</span>
+              </div>
+              <input type="range" class="tech-slider" id="kbBrightnessSlider" min="0" max="100" value="80">
+            </div>
+
+            <div class="lighting-slider-group">
+              <div class="slider-header">
+                <span>ANIMATION SPEED</span>
+                <span id="kbSpeedText">3</span>
+              </div>
+              <input type="range" class="tech-slider" id="kbSpeedSlider" min="1" max="5" value="3">
+            </div>
+
+            <button class="tech-primary-btn" id="applyLightingBtn">APPLY TO KEYBOARD</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: TELEMETRY ================= -->
+      <section class="tab-pane" id="pane-telemetry">
+        <div class="telemetry-grid">
+          <!-- CPU Detailed Card -->
+          <div class="telem-card">
+            <div class="telem-card-header">
+              <span class="telem-card-title">PROCESSOR • INTEL CORE i7-13700HX</span>
+              <span class="telem-spec">16 CORES (8P + 8E) • 24 THREADS</span>
+            </div>
+            <div class="telem-main-metric">
+              <span class="metric-giant" id="telemCpuTemp">48</span>
+              <span class="metric-giant-unit">°C</span>
+            </div>
+            <div class="telem-bars-list">
+              <div class="telem-row">
+                <span>UTILIZATION</span>
+                <strong id="telemCpuUsage">14.5%</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" id="telemCpuBar" style="width: 14.5%;"></div></div>
+
+              <div class="telem-row">
+                <span>POWER DRAW (PL1 / SUSTAINED)</span>
+                <strong id="telemCpuPower">55 W</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width: 45%;"></div></div>
+            </div>
+          </div>
+
+          <!-- GPU Detailed Card -->
+          <div class="telem-card">
+            <div class="telem-card-header">
+              <span class="telem-card-title">GRAPHICS • NVIDIA GEFORCE RTX 4050</span>
+              <span class="telem-spec">6 GB GDDR6 • NULLMOTH METAL DRIVER</span>
+            </div>
+            <div class="telem-main-metric">
+              <span class="metric-giant" id="telemGpuTemp">44</span>
+              <span class="metric-giant-unit">°C</span>
+            </div>
+            <div class="telem-bars-list">
+              <div class="telem-row">
+                <span>PCIe LINK</span>
+                <strong>x16 Gen 4</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill cyan" style="width: 100%;"></div></div>
+
+              <div class="telem-row">
+                <span>FAN SPEED</span>
+                <strong id="telemGpuRpm">2,280 RPM</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill cyan" id="telemGpuFanBar" style="width: 40%;"></div></div>
+            </div>
+          </div>
+
+          <!-- Memory Card -->
+          <div class="telem-card">
+            <div class="telem-card-header">
+              <span class="telem-card-title">SYSTEM MEMORY • DDR5 4800MHz</span>
+              <span class="telem-spec">DUAL CHANNEL • 32.0 GB</span>
+            </div>
+            <div class="telem-main-metric">
+              <span class="metric-giant" id="telemRamUsed">12.2</span>
+              <span class="metric-giant-unit">GB</span>
+            </div>
+            <div class="telem-bars-list">
+              <div class="telem-row">
+                <span>RAM UTILIZATION</span>
+                <strong id="telemRamPercent">38.2%</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill amber" id="telemRamBar" style="width: 38.2%;"></div></div>
+
+              <div class="telem-row">
+                <span>AVAILABLE MEMORY</span>
+                <strong id="telemRamAvail">19.8 GB</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACPI & System Health Card -->
+          <div class="telem-card">
+            <div class="telem-card-header">
+              <span class="telem-card-title">ACPI & FIRMWARE STATUS</span>
+              <span class="telem-spec">INSYDE EC0_ • SYSTEMMEMORY 0xFE708500</span>
+            </div>
+            <div class="specs-table">
+              <div class="spec-line"><span>SSDT Table:</span><strong>SSDT-PREDATOR.aml (Active)</strong></div>
+              <div class="spec-line"><span>OpenCore Target:</span><strong>MacBookPro16,2 (Sequoia 15)</strong></div>
+              <div class="spec-line"><span>Embedded Controller:</span><strong>Insyde ERAM (0xFE708500)</strong></div>
+              <div class="spec-line"><span>Battery Protection (B1CC):</span><strong id="telemB1cc">80% Cap Active</strong></div>
+              <div class="spec-line"><span>Sunrex Keyboard HID:</span><strong>VID 0x05AF / Usage 0xFF02</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Status Bar -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="pulse-indicator"></span>
+        <span class="footer-status-text" id="daemonStatusText">HARDWARE DAEMON ONLINE • 127.0.0.1:48800</span>
+      </div>
+      <div class="footer-right">
+        <span>BOARD: COMPASS_RTX</span>
+        <span class="sep">•</span>
+        <span>ACER PREDATOR HELIOS NEO 16</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+#!/bin/bash
+# PredatorSense for macOS App Launcher
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
+cd "$DIR"
+
+echo "[+] Starting PredatorSense Hardware Daemon..."
+node src/server/daemon.js &
+DAEMON_PID=$!
+
+sleep 1
+
+# If swift menubar binary exists, launch it in background
+if [ -f "$DIR/tools/PredatorMenubar" ]; then
+    "$DIR/tools/PredatorMenubar" &
+fi
+
+# Open full PredatorSense UI in default browser or WebKit app
+open "http://127.0.0.1:48800"
+
+wait $DAEMON_PID
