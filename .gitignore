@@ -1,0 +1,35 @@
+# Build and scratch artifacts
+scratch/
+extracted_app/
+extracted_asar/
+PredatorSense_5.0.1463/
+rea/
+rea_js_analysis.json
+sources_list.json
+test_out.iso
+test_symlink.iso
+test_symlink_ok.iso
+test_ec.aml
+test_ec.dsl
+*.backup
+*.log
+
+# Temporary test scripts
+test_agent_socket.js
+test_exports.js
+test_queries.js
+dump_adapter.js
+dump_ades.js
+dump_pssdk_adapter.js
+dump_set_device_data.js
+dump_source_map.js
+search_hw_control.js
+parse_ec.py
+inspect_dsdt.py
+decode_ec_offsets.py
+check_config_plist.py
+
+# System & OS
+.DS_Store
+Thumbs.db
+node_modules/
