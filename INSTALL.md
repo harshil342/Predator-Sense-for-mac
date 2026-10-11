@@ -6,7 +6,7 @@ This guide details how to install and configure **PredatorSense for macOS** on y
 
 ## Prerequisites
 
-1. **Hardware**: Acer Predator Helios Neo 16 (`PHN16-71`, Intel i7-13700HX, RTX 4050, 4-zone RGB keyboard).
+1. **Hardware**: Acer Predator Helios Neo (`PHN16-71/72`, `PHN18`), Helios 16/18 (`PH16/18`), Helios 300 (`PH315/317`), Triton (`PT314/315/515/516`), or Nitro 5/16/17 series with 4-zone RGB keyboard.
 2. **Bootloader**: OpenCore (0.9.x through 1.0.x) with `VirtualSMC.kext`.
 3. **Runtime**: Node.js (v18+) installed on your macOS system (`brew install node`).
 

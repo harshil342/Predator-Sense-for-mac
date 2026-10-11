@@ -24,6 +24,27 @@ Reverse engineered from PredatorSense v5.0.1463 to interface directly with Insyd
 
 ---
 
+## Supported Laptop Models & Compatibility Scope
+
+All modern Acer gaming laptops sharing the **Insyde H2O Embedded Controller** architecture and **Sunrex USB HID keyboard controller** are in scope.
+
+| Laptop Family | Models | Chipset / Gen | Scope & Support Level |
+|---|---|---|---|
+| **Predator Helios Neo** | `PHN16-71`, `PHN16-72`, `PHN18-71` | Intel 13th / 14th Gen (RPL-HX) | **Tier 1 — Full Native** (Fans, PL1/PL2, 4-Zone RGB, 80% Batt) |
+| **Predator Helios 16 / 18** | `PH16-71`, `PH16-72`, `PH18-71`, `PH18-72` | Intel 13th / 14th Gen (RPL-HX) | **Tier 1 — Full Native** (Dual AeroBlade Fans, RGB, Thermals) |
+| **Predator Helios 300** | `PH315-53`, `PH315-54`, `PH315-55`, `PH317-53..55` | Intel 10th / 11th / 12th Gen | **Tier 1 — Full Native** (Fans, Turbo toggle, 4-Zone RGB) |
+| **Predator Triton** | `PT314-51s/52s`, `PT315-52/53`, `PT515-51/52`, `PT516-52s`, `PT14/16/17` | Intel 10th / 11th / 12th / 13th Gen | **Tier 1 — Full Native** (AeroBlade Fans, RGB, Battery limiter) |
+| **Nitro 5 / 16 / 17** | `AN515-55/57/58`, `AN16-51`, `AN17-51` | Intel 10th / 11th / 12th / 13th Gen | **Tier 1 — Full Native** (CoolBoost Fans, 4-Zone RGB via Sunrex) |
+
+> [!NOTE]
+> **Why are all these models compatible?**
+> Acer standardizes their motherboard firmware across the Predator and Nitro product lines:
+> 1. **Embedded Controller (`ERAM`)**: All models route fan tachometers, thermal sensors, and battery limits through the Insyde `EC0_` device at `\_SB.PC00.LPCB.EC0` (or `\_SB.PCI0.LPCB.EC0` on 10th Gen).
+> 2. **Keyboard Lighting**: The 4-zone RGB keyboard microcontroller is consistently a Sunrex USB HID device (`VID 0x05AF`, UsagePage `0xFF02`) across both Predator and Nitro series.
+> 3. **ACPI Portability**: `SSDT-PREDATOR.aml` maps directly to these standard EC offsets with zero external kext requirements.
+
+---
+
 ## Architecture Overview
 
 ```mermaid
