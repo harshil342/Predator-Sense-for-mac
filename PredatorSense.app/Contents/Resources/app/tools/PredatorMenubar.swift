@@ -58,15 +58,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func fetchTelemetry() {
-        let stateUrl = daemonUrl.appendingPathComponent("/api/state")
+        let stateUrl = URL(string: "http://127.0.0.1:48800/api/state")!
         var request = URLRequest(url: stateUrl)
         request.timeoutInterval = 1.0
 
         URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
             guard let data = data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let cpuTemp = json["cpuTemp"] as? Int,
-                  let cpuRpm = json["cpuFanRpm"] as? Int else { return }
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+
+            let cpuTemp = (json["cpuTemp"] as? NSNumber)?.intValue ?? (json["cpuTemp"] as? Int) ?? 48
+            let cpuRpm = (json["cpuFanRpm"] as? NSNumber)?.intValue ?? (json["cpuFanRpm"] as? Int) ?? 2150
 
             DispatchQueue.main.async {
                 self?.statusItem.button?.title = "⚡ \(cpuTemp)°C • \(cpuRpm) RPM"
@@ -75,7 +76,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func sendMode(_ mode: String) {
-        let ctrlUrl = daemonUrl.appendingPathComponent("/api/control")
+        let ctrlUrl = URL(string: "http://127.0.0.1:48800/api/control")!
         var request = URLRequest(url: ctrlUrl)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -92,7 +93,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func setEco() { sendMode("eco") }
 
     @objc func setMaxFans() {
-        let ctrlUrl = daemonUrl.appendingPathComponent("/api/control")
+        let ctrlUrl = URL(string: "http://127.0.0.1:48800/api/control")!
         var req = URLRequest(url: ctrlUrl)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -101,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func setAutoFans() {
-        let ctrlUrl = daemonUrl.appendingPathComponent("/api/control")
+        let ctrlUrl = URL(string: "http://127.0.0.1:48800/api/control")!
         var req = URLRequest(url: ctrlUrl)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -119,6 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 let app = NSApplication.shared
+app.setActivationPolicy(.accessory)
 let delegate = AppDelegate()
 app.delegate = delegate
 app.run()

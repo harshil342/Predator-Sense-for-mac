@@ -16,12 +16,13 @@ This guide details how to install and configure **PredatorSense for macOS** on y
 
 ### Method 1: Using the `.dmg` Disk Image (Recommended)
 
-1. Download **`PredatorSense-5.0.1-macOS.dmg`** from the [GitHub Releases](https://github.com/harshil342/Predator-Sense-for-mac/releases) page.
-2. Double-click `PredatorSense-5.0.1-macOS.dmg` to mount the virtual disk.
-3. Drag **`PredatorSense.app`** into your **`Applications`** folder.
+1. Download **`PredatorSense-5.0.3-macOS.dmg`** (or `.zip`) from the [GitHub Releases](https://github.com/harshil342/Predator-Sense-for-mac/releases) page.
+2. Double-click `PredatorSense-5.0.3-macOS.dmg` to mount the virtual disk.
+3. Drag **`PredatorSense.app`** into your **`Applications`** folder (or run `Install.command` for automated setup).
 4. If macOS Gatekeeper displays an unverified developer warning, run:
    ```bash
    xattr -cr /Applications/PredatorSense.app
+   codesign --force --deep -s - /Applications/PredatorSense.app
    ```
 5. Launch `PredatorSense` from Applications or Spotlight.
 
@@ -109,7 +110,7 @@ Expected output:
 [PASS] OpenCore config.plist includes SSDT-PREDATOR.aml enabled
 
 --- Phase 2: Sunrex 4-Zone RGB Lighting Engine ---
-[PASS] Sunrex keyboard driver module exists
+[PASS] Sunrex keyboard driver module exists and formats packets
 
 --- Phase 3 & 4: Hardware Daemon & UI Application ---
 [PASS] Daemon serves /api/state with laptop metadata
@@ -123,9 +124,11 @@ Expected output:
 [PASS] macOS PredatorSense.app bundle structure is complete
 [PASS] macOS Disk Image (.dmg) installer exists and is verified
 [PASS] macOS Portable ZIP archive exists
+[PASS] macOS Mountable ISO disc image exists and is verified
+[PASS] macOS automated Install.command and native DMG builder exist
 
 ========================================================
-  VERIFICATION RESULTS: 13 / 13 TESTS PASSED (100%)
+  VERIFICATION RESULTS: 15 / 15 TESTS PASSED (100%)
 ========================================================
 ```
 

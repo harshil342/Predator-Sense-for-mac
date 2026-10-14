@@ -17,9 +17,9 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>5.0.2</string>
+    <string>5.0.3</string>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>LSMinimumSystemVersion</key>
     <string>11.0</string>
     <key>LSApplicationCategoryType</key>
@@ -27,7 +27,7 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>LSUIElement</key>
-    <false/>
+    <true/>
     <key>NSRequiresAquaSystemAppearance</key>
     <false/>
     <key>NSAppleEventsUsageDescription</key>

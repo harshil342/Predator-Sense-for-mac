@@ -95,18 +95,23 @@ else
     echo "[INFO] Daemon already running on port 48800." >> "$DAEMON_LOG"
 fi
 
-# Launch Swift Menubar Companion if present
-if [ -f "$APP_DIR/tools/PredatorMenubar" ] && [ -x "$APP_DIR/tools/PredatorMenubar" ]; then
-    "$APP_DIR/tools/PredatorMenubar" >> "$MENUBAR_LOG" 2>&1 &
-elif [ -f "$APP_DIR/tools/PredatorMenubar.swift" ] && command -v swift >/dev/null 2>&1; then
-    swift "$APP_DIR/tools/PredatorMenubar.swift" >> "$MENUBAR_LOG" 2>&1 &
+# Launch Swift Menubar Companion if not already running
+MENUBAR_PID=""
+if ! pgrep -f "PredatorMenubar" >/dev/null 2>&1; then
+    if [ -f "$APP_DIR/tools/PredatorMenubar" ] && [ -x "$APP_DIR/tools/PredatorMenubar" ]; then
+        "$APP_DIR/tools/PredatorMenubar" >> "$MENUBAR_LOG" 2>&1 &
+        MENUBAR_PID=$!
+    elif [ -f "$APP_DIR/tools/PredatorMenubar.swift" ] && command -v swift >/dev/null 2>&1; then
+        swift "$APP_DIR/tools/PredatorMenubar.swift" >> "$MENUBAR_LOG" 2>&1 &
+        MENUBAR_PID=$!
+    fi
 fi
 
 # Open full PredatorSense UI in default browser
 open "http://127.0.0.1:48800"
 
 # Cleanup on exit
-trap 'kill $DAEMON_PID 2>/dev/null' EXIT INT TERM
+trap 'kill $DAEMON_PID $MENUBAR_PID 2>/dev/null' EXIT INT TERM
 
 if [ -n "$DAEMON_PID" ]; then
     wait $DAEMON_PID

@@ -49,8 +49,20 @@ cp -R "$SOURCE_APP" "$DEST_APP"
 echo -e "${GREEN}      Successfully copied PredatorSense.app to /Applications!${NC}"
 
 # 3. Permissions & Executable Attributes
-echo -e "${CYAN}[2/5] Configuring executable permissions...${NC}"
+echo -e "${CYAN}[2/5] Configuring executable permissions & native bridges...${NC}"
 chmod +x "$DEST_APP/Contents/MacOS/PredatorSense"
+
+# Compile native Swift helpers if swiftc is available
+if command -v swiftc >/dev/null 2>&1; then
+    echo "      Compiling native Swift helpers with swiftc..."
+    if [ -f "$DEST_APP/Contents/Resources/app/tools/predator-rgb.swift" ]; then
+        swiftc -O "$DEST_APP/Contents/Resources/app/tools/predator-rgb.swift" -o "$DEST_APP/Contents/Resources/app/tools/predator-rgb" 2>/dev/null || true
+    fi
+    if [ -f "$DEST_APP/Contents/Resources/app/tools/PredatorMenubar.swift" ]; then
+        swiftc -O "$DEST_APP/Contents/Resources/app/tools/PredatorMenubar.swift" -o "$DEST_APP/Contents/Resources/app/tools/PredatorMenubar" 2>/dev/null || true
+    fi
+fi
+
 if [ -f "$DEST_APP/Contents/Resources/app/tools/predator-rgb" ]; then
     chmod +x "$DEST_APP/Contents/Resources/app/tools/predator-rgb"
 fi

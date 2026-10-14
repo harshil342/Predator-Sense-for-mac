@@ -11,7 +11,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 cd "$ROOT_DIR"
 
-OUTPUT_DMG="PredatorSense-5.0.2-macOS.dmg"
+OUTPUT_DMG="PredatorSense-5.0.3-macOS.dmg"
 TEMP_DMG="temp_predatorsense.dmg"
 VOL_NAME="PredatorSense"
 STAGING_DIR="$ROOT_DIR/dist_staging"

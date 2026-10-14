@@ -129,7 +129,7 @@ One-click toggling across five discrete power & fan profiles:
 ### Step 2: Install Application
 
 #### Option A: One-Click Installer (Recommended)
-1. Download **`PredatorSense-5.0.2-macOS.zip`** or **`PredatorSense-5.0.2-macOS.iso`**.
+1. Download **`PredatorSense-5.0.3-macOS.zip`** or **`PredatorSense-5.0.3-macOS.iso`**.
 2. Double-click **`Install.command`** in the extracted folder.
    - Automatically copies `PredatorSense.app` into `/Applications`
    - Strips macOS Gatekeeper quarantine flags (`xattr -cr`)
@@ -138,7 +138,7 @@ One-click toggling across five discrete power & fan profiles:
 3. Done! PredatorSense will launch automatically.
 
 #### Option B: Drag and Drop
-1. Mount `PredatorSense-5.0.2-macOS.iso` (or `.dmg`).
+1. Mount `PredatorSense-5.0.3-macOS.iso` (or `.dmg`).
 2. Drag **`PredatorSense.app`** into **`Applications`**.
 3. If macOS displays *"App is damaged"* or an unverified developer warning, run in Terminal:
    ```bash
@@ -154,9 +154,9 @@ One-click toggling across five discrete power & fan profiles:
 ```
 .
 ├── Install.command                 # One-click automated macOS installer
-├── PredatorSense-5.0.2-macOS.dmg  # Standalone Apple Disk Image installer
-├── PredatorSense-5.0.2-macOS.iso  # Native mountable disc image
-├── PredatorSense-5.0.2-macOS.zip  # Portable ZIP release with POSIX permissions
+├── PredatorSense-5.0.3-macOS.dmg  # Standalone Apple Disk Image installer
+├── PredatorSense-5.0.3-macOS.iso  # Native mountable disc image
+├── PredatorSense-5.0.3-macOS.zip  # Portable ZIP release with POSIX permissions
 ├── PredatorSense.app/             # Self-contained macOS Application Bundle
 │   └── Contents/
 │       ├── Info.plist             # Bundle metadata & bundle identifier

@@ -11,7 +11,9 @@
 
 const http = require('http');
 const os = require('os');
+const path = require('path');
 const { execSync } = require('child_process');
+const { SunrexKeyboardDriver } = require('../drivers/sunrexKeyboard');
 
 class PredatorHardwareDaemon {
   constructor(port = 48800) {
@@ -51,25 +53,19 @@ class PredatorHardwareDaemon {
       }
     };
 
+    this.prevCpuTicks = null;
     this.initKeyboardDriver();
     this.startTelemetryLoop();
   }
 
   initKeyboardDriver() {
-    // ponytail: embed minimal Sunrex driver inline to avoid build steps
-    this.sunrex = {
-      applyProfile: (prof) => {
-        if (prof.zones) this.state.keyboard.zones = prof.zones;
-        if (prof.effect) this.state.keyboard.effect = prof.effect;
-        if (typeof prof.brightness === 'number') this.state.keyboard.brightness = prof.brightness;
-        if (typeof prof.speed === 'number') this.state.keyboard.speed = prof.speed;
-        return this.state.keyboard;
-      }
-    };
+    const toolsDir = path.resolve(__dirname, '../../tools');
+    this.sunrex = new SunrexKeyboardDriver({ toolsDir });
+    this.state.keyboard = this.sunrex.getProfile();
   }
 
   readHardwareTelemetry() {
-    // 1. Calculate live OS CPU & Memory load
+    // 1. Calculate live OS CPU & Memory load using sample deltas
     const cpus = os.cpus();
     let totalIdle = 0, totalTick = 0;
     cpus.forEach(cpu => {
@@ -79,6 +75,16 @@ class PredatorHardwareDaemon {
       totalIdle += cpu.times.idle;
     });
 
+    if (this.prevCpuTicks) {
+      const deltaIdle = totalIdle - this.prevCpuTicks.idle;
+      const deltaTotal = totalTick - this.prevCpuTicks.total;
+      if (deltaTotal > 0) {
+        const usage = Math.max(0, Math.min(100, (1 - (deltaIdle / deltaTotal)) * 100));
+        this.state.cpuUsage = parseFloat(usage.toFixed(1));
+      }
+    }
+    this.prevCpuTicks = { idle: totalIdle, total: totalTick };
+
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
@@ -86,6 +92,8 @@ class PredatorHardwareDaemon {
     this.state.ramTotalGb = parseFloat((totalMem / (1024 ** 3)).toFixed(1));
     this.state.ramUsedGb = parseFloat((usedMem / (1024 ** 3)).toFixed(1));
     this.state.ramUsage = parseFloat(((usedMem / totalMem) * 100).toFixed(1));
+
+    let hwTelemetryRead = false;
 
     // 2. Query macOS SMC or ACPI if running on macOS
     if (process.platform === 'darwin') {
@@ -98,27 +106,63 @@ class PredatorHardwareDaemon {
       } catch (e) {}
 
       try {
-        // Query SMC temperatures if smc utility exists in PATH or tools
-        // TC0P = CPU Proximity, TG0P = GPU Proximity, F0Ac = Fan 0 Actual, F1Ac = Fan 1 Actual
-        const smcOut = execSync('ioreg -r -n AppleSMC -l', { encoding: 'utf-8', timeout: 1000 });
-        // Parse if present
+        // Query SMC temperatures and fan tachometers from IORegistry (VirtualSMC / AppleSMC)
+        const ioregOut = execSync('ioreg -r -c AppleSMC -l 2>/dev/null || ioreg -r -c VirtualSMC -l 2>/dev/null', {
+          encoding: 'utf-8',
+          timeout: 1500
+        });
+
+        const cpuMatch = ioregOut.match(/"(?:TC0P|TC0E|TC0D|CPU Temperature)"\s*=\s*([0-9.]+)/i);
+        const gpuMatch = ioregOut.match(/"(?:TG0P|TG0D|GPU Temperature)"\s*=\s*([0-9.]+)/i);
+        const fan0Match = ioregOut.match(/"(?:F0Ac|Fan 0 Actual|CPU Fan)"\s*=\s*([0-9.]+)/i);
+        const fan1Match = ioregOut.match(/"(?:F1Ac|Fan 1 Actual|GPU Fan)"\s*=\s*([0-9.]+)/i);
+
+        if (cpuMatch) {
+          const val = parseFloat(cpuMatch[1]);
+          if (val > 0 && val < 115) {
+            this.state.cpuTemp = Math.round(val);
+            hwTelemetryRead = true;
+          }
+        }
+        if (gpuMatch) {
+          const val = parseFloat(gpuMatch[1]);
+          if (val > 0 && val < 115) {
+            this.state.gpuTemp = Math.round(val);
+          }
+        }
+        if (fan0Match) {
+          const val = Math.round(parseFloat(fan0Match[1]));
+          if (val >= 0) {
+            this.state.cpuFanRpm = val;
+            hwTelemetryRead = true;
+          }
+        }
+        if (fan1Match) {
+          const val = Math.round(parseFloat(fan1Match[1]));
+          if (val >= 0) {
+            this.state.gpuFanRpm = val;
+          }
+        }
       } catch (e) {}
-    } else {
-      // High-precision organic simulation for responsive telemetry feedback
+    }
+
+    // 3. Dynamic Thermal & Acoustic Model (active when specific SMC keys are absent or in headless test)
+    if (!hwTelemetryRead) {
       const jitter = (Math.random() - 0.5) * 1.5;
       
-      // Mode multipliers
-      const modeMultipliers = {
-        quiet: { temp: 42, baseRpm: 1800, maxRpm: 2400 },
-        balanced: { temp: 50, baseRpm: 2200, maxRpm: 3400 },
-        performance: { temp: 62, baseRpm: 3200, maxRpm: 4600 },
-        turbo: { temp: 74, baseRpm: 4900, maxRpm: 5600 },
-        eco: { temp: 39, baseRpm: 1500, maxRpm: 2100 }
+      const modeProfiles = {
+        quiet: { baseTemp: 40, tempScale: 0.25, baseRpm: 1800, maxRpm: 2400 },
+        balanced: { baseTemp: 46, tempScale: 0.35, baseRpm: 2200, maxRpm: 3400 },
+        performance: { baseTemp: 56, tempScale: 0.45, baseRpm: 3200, maxRpm: 4600 },
+        turbo: { baseTemp: 68, tempScale: 0.55, baseRpm: 4900, maxRpm: 5600 },
+        eco: { baseTemp: 38, tempScale: 0.20, baseRpm: 1500, maxRpm: 2100 }
       };
 
-      const mult = modeMultipliers[this.state.mode] || modeMultipliers.balanced;
-      this.state.cpuTemp = Math.round(Math.max(35, Math.min(95, mult.temp + jitter * 2)));
-      this.state.gpuTemp = Math.round(Math.max(32, Math.min(88, mult.temp - 4 + jitter * 1.5)));
+      const prof = modeProfiles[this.state.mode] || modeProfiles.balanced;
+      const loadFactor = (this.state.cpuUsage || 15) / 100;
+
+      this.state.cpuTemp = Math.round(Math.max(35, Math.min(95, prof.baseTemp + (loadFactor * 30 * prof.tempScale) + jitter * 2)));
+      this.state.gpuTemp = Math.round(Math.max(32, Math.min(88, this.state.cpuTemp - 4 + jitter * 1.5)));
       
       if (this.state.fanMode === 'max') {
         this.state.cpuFanRpm = 5540 + Math.round(jitter * 40);
@@ -127,12 +171,11 @@ class PredatorHardwareDaemon {
         this.state.cpuFanRpm = Math.round((this.state.cpuFanTarget / 100) * 5600);
         this.state.gpuFanRpm = Math.round((this.state.gpuFanTarget / 100) * 5600);
       } else {
-        // Auto mode follows curve
-        this.state.cpuFanRpm = Math.round(mult.baseRpm + jitter * 80);
-        this.state.gpuFanRpm = Math.round(mult.baseRpm + 120 + jitter * 80);
+        // Auto mode dynamically tracks real CPU load
+        const dynamicRpm = Math.round(prof.baseRpm + (loadFactor * (prof.maxRpm - prof.baseRpm)) + jitter * 80);
+        this.state.cpuFanRpm = Math.max(1200, Math.min(5600, dynamicRpm));
+        this.state.gpuFanRpm = Math.max(1200, Math.min(5600, dynamicRpm + 120));
       }
-
-      this.state.cpuUsage = parseFloat(Math.max(5, Math.min(100, 15 + jitter * 8)).toFixed(1));
     }
   }
 
@@ -218,7 +261,7 @@ class PredatorHardwareDaemon {
           }
 
           if (cmd.keyboard) {
-            this.sunrex.applyProfile(cmd.keyboard);
+            this.state.keyboard = this.sunrex.applyProfile(cmd.keyboard);
           }
 
           this.readHardwareTelemetry();

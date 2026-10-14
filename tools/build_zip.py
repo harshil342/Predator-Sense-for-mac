@@ -8,7 +8,7 @@ Preserves UNIX permissions (0o755 for executables/scripts, 0o644 for assets).
 
 import os, zipfile
 
-zip_name = "PredatorSense-5.0.2-macOS.zip"
+zip_name = "PredatorSense-5.0.3-macOS.zip"
 print(f"[+] Creating macOS ZIP distribution package: {zip_name}...")
 
 def add_file_with_unix_perms(zf, file_path, arcname, is_executable=False):

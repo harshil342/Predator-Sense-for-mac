@@ -61,9 +61,14 @@ async function runVerification() {
 
   // 2. Phase 2 Verification: Sunrex 4-Zone RGB Lighting Engine
   console.log('\n--- Phase 2: Sunrex 4-Zone RGB Lighting Engine ---');
-  test('Sunrex keyboard driver module exists', () => {
-    assert(fs.existsSync('src/drivers/sunrexKeyboard.ts'), 'sunrexKeyboard.ts missing');
+  test('Sunrex keyboard driver module exists and formats packets', () => {
+    assert(fs.existsSync('src/drivers/sunrexKeyboard.js'), 'sunrexKeyboard.js missing');
     assert(fs.existsSync('tools/predator-rgb.swift'), 'predator-rgb.swift missing');
+    const { SunrexKeyboardDriver } = require('../src/drivers/sunrexKeyboard');
+    const driver = new SunrexKeyboardDriver();
+    const pkt = driver.buildZonePacket(0, { r: 0, g: 230, b: 255 }, 80);
+    assert.strictEqual(pkt.length, 16);
+    assert.strictEqual(pkt[1], 0x02);
   });
 
   // 3. Phase 3 & 4: Daemon & UI Integration
@@ -146,21 +151,21 @@ async function runVerification() {
   });
 
   test('macOS Disk Image (.dmg) installer exists and is verified', () => {
-    const dmgPath = 'PredatorSense-5.0.2-macOS.dmg';
+    const dmgPath = 'PredatorSense-5.0.3-macOS.dmg';
     assert(fs.existsSync(dmgPath), 'DMG missing');
     const stat = fs.statSync(dmgPath);
     assert(stat.size > 50000, `DMG size unexpected: ${stat.size} bytes`);
   });
 
   test('macOS Portable ZIP archive exists', () => {
-    const zipPath = 'PredatorSense-5.0.2-macOS.zip';
+    const zipPath = 'PredatorSense-5.0.3-macOS.zip';
     assert(fs.existsSync(zipPath), 'ZIP missing');
     const stat = fs.statSync(zipPath);
     assert(stat.size > 10000, `ZIP size unexpected: ${stat.size} bytes`);
   });
 
   test('macOS Mountable ISO disc image exists and is verified', () => {
-    const isoPath = 'PredatorSense-5.0.2-macOS.iso';
+    const isoPath = 'PredatorSense-5.0.3-macOS.iso';
     assert(fs.existsSync(isoPath), 'ISO missing');
     const stat = fs.statSync(isoPath);
     assert(stat.size > 50000, `ISO size unexpected: ${stat.size} bytes`);

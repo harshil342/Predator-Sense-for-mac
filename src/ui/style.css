@@ -1215,3 +1215,54 @@ body {
   display: flex;
   gap: 8px;
 }
+
+/* ================= HUD TACTICAL TOAST ================= */
+.hud-toast {
+  position: fixed;
+  bottom: 46px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: oklch(0.14 0.02 240 / 0.94);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--predator-cyan);
+  box-shadow: 0 4px 24px var(--predator-cyan-glow);
+  color: var(--text-main);
+  padding: 8px 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+  z-index: 999;
+}
+
+.hud-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.hud-toast-icon {
+  font-size: 14px;
+  color: var(--predator-cyan);
+  filter: drop-shadow(0 0 6px var(--predator-cyan));
+}
+
+/* ================= COMPACT COCKPIT MODE ================= */
+body.compact-view .dashboard-hero {
+  padding: 18px 24px;
+}
+body.compact-view .hero-mode-title {
+  font-size: 38px;
+}
+body.compact-view .glance-grid {
+  gap: 12px;
+}
+body.compact-view .app-header {
+  height: 50px;
+}

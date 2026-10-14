@@ -1,0 +1,27 @@
+{
+  "name": "predatorsense-macos",
+  "version": "5.0.3",
+  "description": "Hardware control suite, fan manager, 4-zone RGB lighting engine, and telemetry cockpit for Acer Predator Helios Neo running macOS",
+  "main": "src/server/daemon.js",
+  "scripts": {
+    "start": "node src/server/daemon.js",
+    "test": "node tests/verify_all.js",
+    "test:daemon": "node tests/test_daemon.js",
+    "test:keyboard": "node tests/test_sunrex_keyboard.js",
+    "build:zip": "python tools/build_zip.py",
+    "build:dmg": "python tools/build_dmg.py"
+  },
+  "keywords": [
+    "acer",
+    "predator",
+    "predatorsense",
+    "macos",
+    "sequoia",
+    "aeroblade",
+    "rgb-keyboard",
+    "sunrex",
+    "opencore"
+  ],
+  "author": "harshil342",
+  "license": "MIT"
+}

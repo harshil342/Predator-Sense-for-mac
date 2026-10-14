@@ -7,7 +7,10 @@
 
 class PredatorSenseApp {
   constructor() {
-    this.apiUrl = 'http://127.0.0.1:48800';
+    this.apiUrl = (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.startsWith('http'))
+      ? window.location.origin
+      : 'http://127.0.0.1:48800';
+    this.debounceTimers = {};
     this.selectedZone = 'all'; // 'all' or 0, 1, 2, 3
     this.selectedEffect = 'static';
     this.currentColor = '#00E6FF';
@@ -47,6 +50,11 @@ class PredatorSenseApp {
   }
 
   initDom() {
+    // Window Titlebar Controls
+    this.lightClose = document.querySelector('.traffic-lights .light.close');
+    this.lightMin = document.querySelector('.traffic-lights .light.min');
+    this.lightMax = document.querySelector('.traffic-lights .light.max');
+
     // Navigation Tabs
     this.tabs = document.querySelectorAll('.nav-tab');
     this.panes = document.querySelectorAll('.tab-pane');
@@ -84,7 +92,52 @@ class PredatorSenseApp {
     this.batteryToggle = document.getElementById('batteryCapToggle');
   }
 
+  showToast(msg, icon = '⚡') {
+    const toast = document.getElementById('hudToast');
+    const toastMsg = document.getElementById('hudToastMsg');
+    const toastIcon = toast ? toast.querySelector('.hud-toast-icon') : null;
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = msg;
+    if (toastIcon) toastIcon.textContent = icon;
+    toast.classList.add('show');
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2200);
+  }
+
+  debounceControl(key, cmd, delay = 120) {
+    clearTimeout(this.debounceTimers[key]);
+    this.debounceTimers[key] = setTimeout(() => {
+      this.sendControl(cmd);
+    }, delay);
+  }
+
   bindEvents() {
+    // 0. Window Traffic Lights
+    if (this.lightClose) {
+      this.lightClose.addEventListener('click', () => {
+        if (window.confirm('Close PredatorSense cockpit?')) {
+          window.close();
+        }
+      });
+    }
+    if (this.lightMin) {
+      this.lightMin.addEventListener('click', () => {
+        document.body.classList.toggle('compact-view');
+        this.showToast('TOGGLED COMPACT COCKPIT VIEW', '📐');
+      });
+    }
+    if (this.lightMax) {
+      this.lightMax.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
+
     // 1. Navigation Tabs
     this.tabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -98,7 +151,9 @@ class PredatorSenseApp {
 
     // 2. Mode Pills & Cards
     const setMode = (mode) => {
+      const modeIcons = { quiet: '🟢', balanced: '🔵', performance: '🟣', turbo: '🔥', eco: '🌱' };
       this.sendControl({ mode });
+      this.showToast(`${mode.toUpperCase()} PROFILE ACTIVATED`, modeIcons[mode] || '⚡');
     };
 
     this.modePills.forEach(pill => {
@@ -112,19 +167,41 @@ class PredatorSenseApp {
     // 3. Fan Mode Buttons
     this.fanModeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        this.sendControl({ fanMode: btn.dataset.fanmode });
+        const mode = btn.dataset.fanmode;
+        this.sendControl({ fanMode: mode });
+        this.showToast(`COOLBOOST: ${mode.toUpperCase()} FAN VELOCITY`, mode === 'max' ? '🌪️' : '🔄');
       });
     });
 
-    // Fan Sliders
+    // 4. Global Tactical Hotkeys
+    window.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      const key = e.key.toLowerCase();
+      if (key === '1') setMode('quiet');
+      else if (key === '2') setMode('balanced');
+      else if (key === '3') setMode('performance');
+      else if (key === '4' || key === 't') setMode('turbo');
+      else if (key === '5') setMode('eco');
+      else if (key === 'm') {
+        this.sendControl({ fanMode: 'max' });
+        this.showToast('COOLBOOST: MAX FANS (5,600 RPM)', '🌪️');
+      } else if (key === 'a') {
+        this.sendControl({ fanMode: 'auto' });
+        this.showToast('COOLBOOST: AUTO ACOUSTIC CURVE', '🔄');
+      }
+    });
+
+    // Fan Sliders with immediate UI response + debounced dispatch
     this.cpuSlider.addEventListener('input', (e) => {
-      document.getElementById('cpuTargetPercent').textContent = `${e.target.value}%`;
-      this.sendControl({ fanMode: 'custom', cpuFanTarget: parseInt(e.target.value, 10) });
+      const val = parseInt(e.target.value, 10);
+      document.getElementById('cpuTargetPercent').textContent = `${val}%`;
+      this.debounceControl('cpuFan', { fanMode: 'custom', cpuFanTarget: val });
     });
 
     this.gpuSlider.addEventListener('input', (e) => {
-      document.getElementById('gpuTargetPercent').textContent = `${e.target.value}%`;
-      this.sendControl({ fanMode: 'custom', gpuFanTarget: parseInt(e.target.value, 10) });
+      const val = parseInt(e.target.value, 10);
+      document.getElementById('gpuTargetPercent').textContent = `${val}%`;
+      this.debounceControl('gpuFan', { fanMode: 'custom', gpuFanTarget: val });
     });
 
     // 4. Keyboard Zone Selection
@@ -190,12 +267,14 @@ class PredatorSenseApp {
     // Apply Lighting Button
     this.applyLightingBtn.addEventListener('click', () => {
       this.dispatchLightingCommand();
+      this.showToast(`SUNREX 4-ZONE RGB: ${this.selectedEffect.toUpperCase()} PROFILE APPLIED`, '🌈');
     });
 
     // Battery Cap Toggle
     this.batteryToggle.addEventListener('change', (e) => {
       const limit = e.target.checked ? 80 : 100;
       this.sendControl({ batteryLimit: limit });
+      this.showToast(limit === 80 ? 'BATTERY HEALTH CARE: 80% LIMIT APPLIED' : 'BATTERY UNLOCKED: 100% MAXIMUM CHARGE', '🔋');
     });
   }
 
@@ -269,15 +348,21 @@ class PredatorSenseApp {
   connectDaemon() {
     try {
       const sse = new EventSource(`${this.apiUrl}/api/telemetry/stream`);
+      sse.onopen = () => {
+        const el = document.getElementById('daemonStatusText');
+        if (el) el.textContent = 'HARDWARE DAEMON ONLINE • ' + this.apiUrl.replace(/^https?:\/\//, '');
+      };
       sse.onmessage = (e) => {
         const data = JSON.parse(e.data);
         this.updateState(data);
       };
       sse.onerror = () => {
-        document.getElementById('daemonStatusText').textContent = 'STANDALONE MODE (HARDWARE SIMULATION)';
+        const el = document.getElementById('daemonStatusText');
+        if (el) el.textContent = 'STANDALONE MODE (HARDWARE SIMULATION)';
       };
     } catch (e) {
-      document.getElementById('daemonStatusText').textContent = 'STANDALONE MODE (HARDWARE SIMULATION)';
+      const el = document.getElementById('daemonStatusText');
+      if (el) el.textContent = 'STANDALONE MODE (HARDWARE SIMULATION)';
     }
   }
 

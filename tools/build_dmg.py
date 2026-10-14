@@ -10,7 +10,7 @@ Compatible with macOS 11 Big Sur through macOS 15 Sequoia.
 
 import os, sys, shutil, pycdlib
 
-def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="PredatorSense-5.0.2-macOS.dmg", output_iso="PredatorSense-5.0.2-macOS.iso"):
+def build_predatorsense_dmg(app_source_dir="PredatorSense.app", output_dmg="PredatorSense-5.0.3-macOS.dmg", output_iso="PredatorSense-5.0.3-macOS.iso"):
     print("==========================================================")
     print("  BUILDING PREDATORSENSE FOR MACOS DISK IMAGE")
     print(f"  Source: {app_source_dir}")
